@@ -31,6 +31,9 @@ RUN npm run build
 # ─── Stage 3: runtime (nginx) ─────────────────────────────────────────────────
 FROM nginx:1.27-alpine AS runtime
 
+# Install envsubst (part of gettext) for runtime env var substitution in nginx config
+RUN apk add --no-cache gettext
+
 RUN rm /etc/nginx/conf.d/default.conf
 
 # Store the template — envsubst will render it at container startup
