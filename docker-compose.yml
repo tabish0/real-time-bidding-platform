@@ -37,6 +37,7 @@ services:
       DB_PASSWORD:    auction_pass
       DB_NAME:        auction
       DB_POOL_SIZE:   10
+      DB_SSL:         "false"
       CORS_ORIGINS:   http://localhost
       THROTTLE_TTL:   60000
       THROTTLE_LIMIT: 100

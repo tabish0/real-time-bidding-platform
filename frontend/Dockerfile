@@ -24,15 +24,18 @@ ENV VITE_WS_BASE_URL=$VITE_WS_BASE_URL
 RUN npm run build
 
 
-# ─── Stage 3: runtime (serve) ─────────────────────────────────────────────────
-FROM node:20-alpine AS runtime
+# ─── Stage 3: runtime (nginx) ─────────────────────────────────────────────────
+FROM nginx:1.27-alpine AS runtime
 
-RUN npm install -g serve
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
-COPY --from=build /app/dist /app/dist
+# Fallback — overridden by docker-compose locally.
+# On Railway, VITE_API_BASE_URL points directly to the backend so the
+# nginx proxy locations are never used; this just keeps nginx from crashing.
+ENV BACKEND_HOST=localhost:3000
 
-EXPOSE 3000
+EXPOSE 80
 
-# 'serve -s' enables SPA mode (all routes fall back to index.html)
-# Uses $PORT if Railway sets it, otherwise defaults to 3000
-CMD ["sh", "-c", "serve -s /app/dist -l ${PORT:-3000}"]
+# envsubst fills in ${BACKEND_HOST} at container start, then nginx runs
+CMD ["nginx", "-g", "daemon off;"]
