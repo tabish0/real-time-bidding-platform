@@ -1,0 +1,22 @@
+import axios from 'axios'
+import type { ApiError } from '@/types'
+
+export const client = axios.create({
+  baseURL: '/api/v1',
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 15_000,
+})
+
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const apiError: ApiError = error.response?.data ?? {
+      statusCode: 0,
+      timestamp: new Date().toISOString(),
+      path: '',
+      method: '',
+      message: 'Network error — please check your connection.',
+    }
+    return Promise.reject(apiError)
+  },
+)
