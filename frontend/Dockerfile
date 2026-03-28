@@ -5,7 +5,6 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-# --ignore-scripts prevents husky's prepare hook from failing inside Docker
 RUN npm ci --ignore-scripts
 
 
@@ -17,8 +16,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Baked in at build time — set these in Railway Variables tab so the
-# browser calls the backend public URL directly (free tier has no private networking)
 ARG VITE_API_BASE_URL=
 ARG VITE_WS_BASE_URL=
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
@@ -27,14 +24,15 @@ ENV VITE_WS_BASE_URL=$VITE_WS_BASE_URL
 RUN npm run build
 
 
-# ─── Stage 3: runtime (nginx) ─────────────────────────────────────────────────
-FROM nginx:1.27-alpine AS runtime
+# ─── Stage 3: runtime (serve) ─────────────────────────────────────────────────
+FROM node:20-alpine AS runtime
 
-RUN rm /etc/nginx/conf.d/default.conf
+RUN npm install -g serve
 
-COPY nginx.conf /etc/nginx/conf.d/app.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /app/dist
 
-EXPOSE 80
+EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+# 'serve -s' enables SPA mode (all routes fall back to index.html)
+# Uses $PORT if Railway sets it, otherwise defaults to 3000
+CMD ["sh", "-c", "serve -s /app/dist -l ${PORT:-3000}"]
