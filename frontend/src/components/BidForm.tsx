@@ -76,7 +76,7 @@ export function BidForm({ auction }: BidFormProps) {
     return (
       <div className="rounded-xl border border-slate-700/40 bg-slate-800/30 p-5 text-center">
         <p className="text-sm text-slate-500">
-          This auction has {auction.status === 'ended' ? 'ended' : 'been cancelled'} and is no longer accepting bids.
+          This auction has ended and is no longer accepting bids.
         </p>
       </div>
     )

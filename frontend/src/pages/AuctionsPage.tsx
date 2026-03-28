@@ -12,7 +12,6 @@ const STATUS_FILTERS: { label: string; value: AuctionStatus | '' }[] = [
   { label: 'All',       value: '' },
   { label: 'Active',    value: 'active' },
   { label: 'Ended',     value: 'ended' },
-  { label: 'Cancelled', value: 'cancelled' },
 ]
 
 const PAGE_SIZE = 12
