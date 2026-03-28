@@ -196,10 +196,6 @@ export function AuctionDetailPage() {
             <h3 className="text-sm font-medium text-slate-300">Auction info</h3>
             <div className="space-y-1.5 text-xs text-slate-500">
               <div className="flex justify-between">
-                <span>Auction ID</span>
-                <span className="font-mono text-slate-400">{auction.id.split('-')[0]}…</span>
-              </div>
-              <div className="flex justify-between">
                 <span>Total bids</span>
                 <span className="text-slate-300">{bids.length}</span>
               </div>
