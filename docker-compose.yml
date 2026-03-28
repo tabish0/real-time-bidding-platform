@@ -60,6 +60,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
+      PORT:         80
       BACKEND_HOST: backend:3000
     ports:
       - "80:80"
