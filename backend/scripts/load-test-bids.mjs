@@ -283,6 +283,86 @@ async function scenarioBelowFloor(users) {
     `currentHighestBid changed — expected $${FLOOR_BID}, got $${freshAuction.currentHighestBid}`);
 }
 
+// ─── Scenario 5 ──────────────────────────────────────────────────────────────
+// 400-500 concurrent bids at the same amount — stress test the pessimistic lock
+// under realistic load. Produces a full response-time profile.
+async function scenarioHighVolume(users) {
+  const CONCURRENCY = 10000;
+  const STARTING_PRICE = 1000;
+  const BID_AMOUNT     = 1003;
+
+  section(`Scenario 5 — High-volume burst (${CONCURRENCY.toLocaleString()} concurrent bids, response time profile)`);
+
+  const auction = await createAuction(STARTING_PRICE);
+  info(`Auction ${auction.id} (starting price $${STARTING_PRICE})`);
+  info(`Firing ${CONCURRENCY} simultaneous bids at $${BID_AMOUNT} — only 1 should win…`);
+
+  const wallStart = Date.now();
+
+  const requests = Array.from({ length: CONCURRENCY }, (_, i) =>
+    placeBid(auction.id, users[i % users.length].id, BID_AMOUNT),
+  );
+
+  const results  = await Promise.allSettled(requests);
+  const wallMs   = Date.now() - wallStart;
+  const resolved = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+
+  const successes  = resolved.filter((r) => r.status === 201);
+  const rejections = resolved.filter((r) => r.status === 400);
+  const errors     = resolved.filter((r) => r.status !== 201 && r.status !== 400);
+
+  // ── Response time statistics ─────────────────────────────────────────────
+  const times = resolved.map((r) => r.ms).sort((a, b) => a - b);
+  const pct   = (p) => times[Math.floor(times.length * p)] ?? times[times.length - 1];
+  const mean  = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+  const rps   = Math.round((CONCURRENCY / wallMs) * 1000);
+
+  console.log(`
+  ${c.bold}Response time breakdown (${resolved.length} responses)${c.reset}
+  ┌─────────────────────────────────────────────┐
+  │  min    ${String(times[0]).padStart(6)}ms                          │
+  │  mean   ${String(mean).padStart(6)}ms                          │
+  │  p50    ${String(pct(0.50)).padStart(6)}ms                          │
+  │  p75    ${String(pct(0.75)).padStart(6)}ms                          │
+  │  p95    ${String(pct(0.95)).padStart(6)}ms                          │
+  │  p99    ${String(pct(0.99)).padStart(6)}ms                          │
+  │  max    ${String(times[times.length - 1]).padStart(6)}ms                          │
+  ├─────────────────────────────────────────────┤
+  │  wall time   ${String(wallMs).padStart(6)}ms                     │
+  │  throughput  ${String(rps).padStart(5)} req/s                   │
+  ├─────────────────────────────────────────────┤
+  │  accepted    ${String(successes.length).padStart(5)}                          │
+  │  rejected    ${String(rejections.length).padStart(5)}  (400 — lock working)    │
+  │  errors      ${String(errors.length).padStart(5)}  (5xx / network)         │
+  └─────────────────────────────────────────────┘`);
+
+  if (errors.length > 0) {
+    warn(`Unexpected responses: ${errors.map((r) => `HTTP ${r.status}`).join(', ')}`);
+  }
+
+  assert(successes.length === 1,
+    `Exactly 1 bid accepted from ${CONCURRENCY} concurrent requests`,
+    `Expected 1 accepted bid, got ${successes.length}`);
+
+  assert(rejections.length === CONCURRENCY - successes.length,
+    `${CONCURRENCY - successes.length} bids correctly rejected with 400`,
+    `Rejection count mismatch — got ${rejections.length}`);
+
+  assert(errors.length === 0,
+    'No 5xx errors under load (server stayed healthy)',
+    `Got ${errors.length} unexpected responses under load`);
+
+  const freshAuction = await getAuction(auction.id);
+  assert(Number(freshAuction.currentHighestBid) === BID_AMOUNT,
+    `currentHighestBid = $${freshAuction.currentHighestBid} is consistent after burst`,
+    `currentHighestBid mismatch after burst: got $${freshAuction.currentHighestBid}`);
+
+  const bids = await getAuctionBids(auction.id);
+  assert(bids.length === 1,
+    `Exactly 1 bid row in database after ${CONCURRENCY}-request burst`,
+    `Expected 1 bid in DB, found ${bids.length}`);
+}
+
 // ─── Runner ──────────────────────────────────────────────────────────────────
 async function run() {
   console.log(`\n${c.bold}Bid Concurrency Load Test${c.reset}`);
@@ -290,7 +370,8 @@ async function run() {
 
   let users;
   try {
-    users = await getUsers(12);
+    // Load up to 100 users — Scenario 5 cycles through them for high-volume bursts
+    users = await getUsers(100);
     info(`Loaded ${users.length} users from API`);
   } catch (err) {
     console.error(`\n${c.red}Setup failed — is the server running at ${BASE}?${c.reset}`);
@@ -302,6 +383,7 @@ async function run() {
   await scenarioDifferentAmounts(users);
   await scenarioSequential(users);
   await scenarioBelowFloor(users);
+  await scenarioHighVolume(users);
 
   // ─── Summary ─────────────────────────────────────────────────────────────
   const total = passed + failed;
