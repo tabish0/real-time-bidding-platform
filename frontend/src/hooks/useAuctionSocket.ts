@@ -44,9 +44,10 @@ export function useAuctionSocket(auctionId: string) {
       }
 
       qc.setQueryData<Bid[]>(bidKeys.list(auctionId), (old = []) => {
-        // Avoid duplicates if REST mutation already added it
         if (old.some((b) => b.id === event.id)) return old
-        return [newBid, ...old]
+        return [newBid, ...old].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
       })
 
       // Update currentHighestBid on the auction detail
