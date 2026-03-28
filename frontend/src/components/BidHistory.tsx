@@ -38,10 +38,12 @@ export function BidHistory({ bids, isLoading, currentUserId }: BidHistoryProps) 
     )
   }
 
+  const highestAmount = Math.max(...bids.map((b) => b.amount))
+
   return (
     <ol className="space-y-2">
-      {bids.map((bid, idx) => {
-        const isHighest = idx === 0
+      {bids.map((bid) => {
+        const isHighest = bid.amount === highestAmount
         const isCurrentUser = bid.userId === currentUserId
         const name = bid.user?.name ?? 'Anonymous'
 

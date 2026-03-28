@@ -23,8 +23,12 @@ export function usePlaceBid(auctionId: string) {
   return useMutation({
     mutationFn: (payload: PlaceBidPayload) => placeBid(auctionId, payload),
     onSuccess: (newBid: Bid) => {
-      // Prepend new bid to the list cache
-      qc.setQueryData<Bid[]>(bidKeys.list(auctionId), (old = []) => [newBid, ...old])
+      qc.setQueryData<Bid[]>(bidKeys.list(auctionId), (old = []) => {
+        const deduped = old.some((b) => b.id === newBid.id) ? old : [newBid, ...old]
+        return [...deduped].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
+      })
       // Refresh the auction so currentHighestBid updates
       qc.invalidateQueries({ queryKey: auctionKeys.detail(auctionId) })
       toast('success', 'Bid placed!', `Your bid of $${newBid.amount.toLocaleString()} was accepted.`)
