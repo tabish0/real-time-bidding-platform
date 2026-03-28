@@ -42,9 +42,11 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build     /app/dist         ./dist
 COPY package.json ./
+COPY migrate-and-start.sh ./
+RUN chmod +x migrate-and-start.sh
 
 USER appuser
 
 EXPOSE 3000
 
-CMD ["node", "dist/main"]
+CMD ["./migrate-and-start.sh"]
