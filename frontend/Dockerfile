@@ -33,9 +33,14 @@ FROM nginx:1.27-alpine AS runtime
 
 RUN rm /etc/nginx/conf.d/default.conf
 
-COPY nginx.conf /etc/nginx/conf.d/app.conf
+# Store the template — envsubst will render it at container startup
+COPY nginx.conf /etc/nginx/templates/app.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# envsubst replaces ${BACKEND_HOST} with the runtime env var, then starts nginx
+# Default value covers Docker Compose where the backend service is named "backend"
+ENV BACKEND_HOST=backend:3000
+
+CMD ["/bin/sh", "-c", "envsubst '${BACKEND_HOST}' < /etc/nginx/templates/app.conf.template > /etc/nginx/conf.d/app.conf && nginx -g 'daemon off;'"]
