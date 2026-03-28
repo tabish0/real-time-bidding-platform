@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     auction_user
+      POSTGRES_PASSWORD: auction_pass
+      POSTGRES_DB:       auction
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auction_user -d auction"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Backend (NestJS) ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: runtime
+    restart: unless-stopped
+    environment:
+      NODE_ENV:       production
+      PORT:           3000
+      API_PREFIX:     api/v1
+      DB_HOST:        postgres
+      DB_PORT:        5432
+      DB_USERNAME:    auction_user
+      DB_PASSWORD:    auction_pass
+      DB_NAME:        auction
+      DB_POOL_SIZE:   10
+      CORS_ORIGINS:   http://localhost
+      THROTTLE_TTL:   60000
+      THROTTLE_LIMIT: 100
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Run migrations then start the app
+    command: >
+      sh -c "node -e \"
+        const ds = require('./dist/database/data-source').AppDataSource;
+        ds.initialize().then(() => ds.runMigrations()).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); });
+      \" && node dist/main"
+
+  # ── Frontend (nginx + Vite build) ────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
