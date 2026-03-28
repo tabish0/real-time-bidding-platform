@@ -68,8 +68,6 @@ async function bootstrap(): Promise<void> {
   }
 
   await app.listen(port);
-  console.log(`Application running on http://localhost:${port}/${apiPrefix}`);
-  console.log(`Swagger docs at http://localhost:${port}/${apiPrefix}/docs`);
 }
 
 bootstrap();
