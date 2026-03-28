@@ -15,7 +15,7 @@ export function CountdownTimer({ endsAt, status, compact = false }: CountdownTim
     return (
       <span className="inline-flex items-center gap-1 text-xs text-slate-500 font-medium">
         <Clock className="h-3.5 w-3.5" />
-        {status === 'ended' ? 'Ended' : 'Cancelled'}
+        Ended
       </span>
     )
   }

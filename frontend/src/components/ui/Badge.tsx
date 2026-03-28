@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react'
 import type { AuctionStatus } from '@/types'
 
-type Variant = 'active' | 'ended' | 'cancelled' | 'info' | 'warning' | 'neutral'
+type Variant = 'active' | 'ended' | 'info' | 'warning' | 'neutral'
 
 const variantStyles: Record<Variant, string> = {
   active:    'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30',
   ended:     'bg-slate-500/15 text-slate-400 ring-1 ring-slate-500/30',
-  cancelled: 'bg-red-500/15 text-red-400 ring-1 ring-red-500/30',
   info:      'bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30',
   warning:   'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30',
   neutral:   'bg-slate-700/50 text-slate-300 ring-1 ring-slate-600/30',
@@ -15,7 +14,6 @@ const variantStyles: Record<Variant, string> = {
 const statusToVariant: Record<AuctionStatus, Variant> = {
   active:    'active',
   ended:     'ended',
-  cancelled: 'cancelled',
 }
 
 interface BadgeProps {
