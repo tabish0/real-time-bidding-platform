@@ -9,8 +9,12 @@ const mockUser = (): User =>
 describe('UserService', () => {
   let service: UserService;
 
+  const mockGetMany = jest.fn();
+  const mockOrderBy = jest.fn();
+  const mockQueryBuilder = { orderBy: mockOrderBy, getMany: mockGetMany };
+
   const mockUserRepository = {
-    find: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -23,16 +27,24 @@ describe('UserService', () => {
 
     service = module.get<UserService>(UserService);
     jest.clearAllMocks();
+
+    mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+    mockOrderBy.mockReturnValue(mockQueryBuilder);
   });
 
   describe('findAll', () => {
-    it('returns all users ordered by name ascending', async () => {
+    it('returns all users ordered numerically by name', async () => {
       const users = [mockUser()];
-      mockUserRepository.find.mockResolvedValue(users);
+      mockGetMany.mockResolvedValue(users);
 
       const result = await service.findAll();
 
-      expect(mockUserRepository.find).toHaveBeenCalledWith({ order: { name: 'ASC' } });
+      expect(mockUserRepository.createQueryBuilder).toHaveBeenCalledWith('user');
+      expect(mockOrderBy).toHaveBeenCalledWith(
+        expect.stringContaining('regexp_replace'),
+        'ASC',
+        'NULLS LAST',
+      );
       expect(result).toEqual(users);
     });
   });
