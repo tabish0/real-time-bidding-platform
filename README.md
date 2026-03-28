@@ -1,6 +1,6 @@
 # Real-Time Bidding Platform
 
-A full-stack auction platform where users can create auctions and place bids in real time. Multiple auctions can run concurrently with many users bidding simultaneously.
+A full-stack auction platform where users can create auctions and place bids in real time. Users are pre-seeded and selectable from the navigation bar on the dashboard — no authentication required. Multiple auctions can run concurrently with many users bidding simultaneously.
 
 **Live:** [sincere-gentleness-production.up.railway.app](https://sincere-gentleness-production.up.railway.app)
 
