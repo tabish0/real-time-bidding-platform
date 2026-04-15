@@ -3,6 +3,8 @@ import { BidController } from './bid.controller';
 import { BidService } from './bid.service';
 import { PlaceBidDto } from './dto/place-bid.dto';
 import { Bid } from './entities/bid.entity';
+import type { Request } from 'express';
+import type { AuthenticatedUser } from '../auth/strategies/jwt.strategy';
 
 const mockBid = (): Bid =>
   ({
@@ -12,6 +14,8 @@ const mockBid = (): Bid =>
     amount: 150,
     createdAt: new Date(),
   }) as Bid;
+
+const mockRequest = (user: AuthenticatedUser): Partial<Request> => ({ user } as Partial<Request>);
 
 describe('BidController', () => {
   let controller: BidController;
@@ -32,14 +36,15 @@ describe('BidController', () => {
   });
 
   describe('placeBid', () => {
-    it('delegates to BidService and returns the saved bid', async () => {
+    it('extracts userId from JWT and delegates to BidService', async () => {
       const bid = mockBid();
-      const dto: PlaceBidDto = { userId: 'user-1', amount: 150 };
+      const dto: PlaceBidDto = { amount: 150 };
+      const req = mockRequest({ id: 'user-1', email: 'alice@example.com' });
       mockBidService.placeBid.mockResolvedValue(bid);
 
-      const result = await controller.placeBid('auction-1', dto);
+      const result = await controller.placeBid('auction-1', dto, req as Request);
 
-      expect(mockBidService.placeBid).toHaveBeenCalledWith('auction-1', dto);
+      expect(mockBidService.placeBid).toHaveBeenCalledWith('auction-1', dto, 'user-1');
       expect(result).toEqual(bid);
     });
   });
