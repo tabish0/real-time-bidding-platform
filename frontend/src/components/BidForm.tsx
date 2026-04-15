@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { DollarSign, Gavel, AlertCircle, User } from 'lucide-react'
+import { DollarSign, Gavel, AlertCircle, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { usePlaceBid } from '@/hooks/useBids'
-import { useUserStore } from '@/store/userStore'
+import { useAuthStore } from '@/store/authStore'
 import type { Auction } from '@/types'
 import { useNavigate } from 'react-router-dom'
 
@@ -13,7 +13,7 @@ interface BidFormProps {
 
 export function BidForm({ auction }: BidFormProps) {
   const navigate = useNavigate()
-  const { currentUser } = useUserStore()
+  const { user } = useAuthStore()
   const { mutate: placeBid, isPending } = usePlaceBid(auction.id)
   const [amount, setAmount] = useState('')
   const [error, setError] = useState('')
@@ -38,7 +38,7 @@ export function BidForm({ auction }: BidFormProps) {
     if (err) { setError(err); return }
     setError('')
     placeBid(
-      { userId: currentUser!.id, amount: parseFloat(amount) },
+      { amount: parseFloat(amount) },
       { onSuccess: () => setAmount('') },
     )
   }
@@ -49,23 +49,23 @@ export function BidForm({ auction }: BidFormProps) {
     setError('')
   }
 
-  // Not logged in
-  if (!currentUser) {
+  // Not signed in
+  if (!user) {
     return (
       <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-5 text-center space-y-3">
         <div className="flex justify-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-600/20">
-            <User className="h-6 w-6 text-violet-400" />
+            <LogIn className="h-6 w-6 text-violet-400" />
           </div>
         </div>
-        <p className="text-sm text-slate-400">Select a user to place a bid</p>
+        <p className="text-sm text-slate-400">Sign in to place a bid</p>
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/login')}
           className="w-full"
         >
-          Go to dashboard to select user
+          Sign in with Google
         </Button>
       </div>
     )
@@ -96,7 +96,7 @@ export function BidForm({ auction }: BidFormProps) {
         </div>
         <div className="flex items-center justify-between text-sm mt-1">
           <span className="text-slate-400">Bidding as</span>
-          <span className="font-medium text-violet-300">{currentUser.name}</span>
+          <span className="font-medium text-violet-300">{user.name}</span>
         </div>
       </div>
 

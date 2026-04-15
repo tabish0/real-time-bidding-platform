@@ -3,6 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 
+interface FindOrCreateParams {
+  googleId: string;
+  email: string;
+  name: string;
+  picture: string | null;
+}
+
 @Injectable()
 export class UserService {
   constructor(
@@ -10,10 +17,19 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  findAll(): Promise<User[]> {
-    return this.userRepository
-      .createQueryBuilder('user')
-      .orderBy("(regexp_replace(user.name, '\\D', '', 'g'))::int", 'ASC', 'NULLS LAST')
-      .getMany();
+  findById(id: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  findByGoogleId(googleId: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { googleId } });
+  }
+
+  async findOrCreate(params: FindOrCreateParams): Promise<User> {
+    const existing = await this.findByGoogleId(params.googleId);
+    if (existing) return existing;
+
+    const user = this.userRepository.create(params);
+    return this.userRepository.save(user);
   }
 }

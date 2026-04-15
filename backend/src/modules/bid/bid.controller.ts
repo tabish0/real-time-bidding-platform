@@ -1,11 +1,15 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Req, UseGuards } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import type { Request } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthenticatedUser } from '../auth/strategies/jwt.strategy';
 import { BidService } from './bid.service';
 import { PlaceBidDto } from './dto/place-bid.dto';
 import { Bid } from './entities/bid.entity';
@@ -16,14 +20,18 @@ export class BidController {
   constructor(private readonly bidService: BidService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Place a bid on an auction' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Place a bid on an auction (requires auth)' })
   @ApiParam({ name: 'auctionId', type: 'string', format: 'uuid' })
   @ApiCreatedResponse({ description: 'Bid placed successfully', type: Bid })
   placeBid(
     @Param('auctionId', ParseUUIDPipe) auctionId: string,
     @Body() dto: PlaceBidDto,
+    @Req() req: Request,
   ): Promise<Bid> {
-    return this.bidService.placeBid(auctionId, dto);
+    const { id: userId } = req.user as AuthenticatedUser;
+    return this.bidService.placeBid(auctionId, dto, userId);
   }
 
   @Get()

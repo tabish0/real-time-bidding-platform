@@ -53,9 +53,9 @@ export async function placeBid(auctionId: string, payload: PlaceBidPayload): Pro
   return parseBid(data.data)
 }
 
-// ── Users ─────────────────────────────────────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────────────────────
 
-export async function fetchUsers(): Promise<User[]> {
-  const { data } = await client.get<ApiResponse<User[]>>('/users')
+export async function fetchMe(): Promise<User> {
+  const { data } = await client.get<ApiResponse<User>>('/auth/me')
   return data.data
 }

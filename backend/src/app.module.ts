@@ -6,8 +6,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 import appConfig from './config/app.config';
+import authConfig from './config/auth.config';
 import databaseConfig from './config/database.config';
 import { AuctionModule } from './modules/auction/auction.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { BidModule } from './modules/bid/bid.module';
 import { UserModule } from './modules/user/user.module';
 
@@ -15,7 +17,7 @@ import { UserModule } from './modules/user/user.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig],
+      load: [appConfig, authConfig, databaseConfig],
       envFilePath: '.env',
     }),
 
@@ -39,6 +41,7 @@ import { UserModule } from './modules/user/user.module';
 
     ScheduleModule.forRoot(),
 
+    AuthModule,
     AuctionModule,
     BidModule,
     UserModule,

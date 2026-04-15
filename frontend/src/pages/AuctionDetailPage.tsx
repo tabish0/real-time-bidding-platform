@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import { useAuction } from '@/hooks/useAuctions'
 import { useBids } from '@/hooks/useBids'
 import { useAuctionSocket } from '@/hooks/useAuctionSocket'
-import { useUserStore } from '@/store/userStore'
+import { useAuthStore } from '@/store/authStore'
 import { toast } from '@/store/toastStore'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -19,7 +19,7 @@ export function AuctionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const { currentUser } = useUserStore()
+  const { user } = useAuthStore()
 
   const { data: auction, isLoading: auctionLoading, error: auctionError } = useAuction(id!)
   const { data: bids = [], isLoading: bidsLoading } = useBids(id!)
@@ -177,7 +177,7 @@ export function AuctionDetailPage() {
               <h2 className="text-lg font-semibold text-white">Bid History</h2>
               <span className="text-sm text-slate-500">{bids.length} bid{bids.length !== 1 ? 's' : ''}</span>
             </div>
-            <BidHistory bids={bids} isLoading={bidsLoading} currentUserId={currentUser?.id} />
+            <BidHistory bids={bids} isLoading={bidsLoading} currentUserId={user?.id} />
           </div>
         </div>
 

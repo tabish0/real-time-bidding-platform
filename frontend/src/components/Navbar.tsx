@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Gavel, LayoutDashboard, PlusCircle, Menu, X } from 'lucide-react'
+import { Gavel, LayoutDashboard, PlusCircle, Menu, X, LogOut } from 'lucide-react'
 import { useState } from 'react'
-import { UserSelector } from './UserSelector'
+import { useAuthStore } from '@/store/authStore'
 
 const navLinks = [
   { to: '/',         label: 'Dashboard', icon: LayoutDashboard },
@@ -11,6 +11,12 @@ const navLinks = [
 export function Navbar() {
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { user, clearAuth } = useAuthStore()
+
+  function handleLogout() {
+    clearAuth()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800/60 glass-card">
@@ -53,7 +59,7 @@ export function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
-            <UserSelector />
+            {/* New Auction button */}
             <button
               onClick={() => navigate('/auctions/new')}
               className="hidden md:flex items-center gap-2 rounded-lg bg-violet-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-violet-500 transition-colors shadow-lg shadow-violet-900/30"
@@ -61,6 +67,36 @@ export function Navbar() {
               <PlusCircle className="h-4 w-4" />
               New Auction
             </button>
+
+            {/* User avatar + logout */}
+            {user && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-lg border border-slate-700/80 bg-slate-900/80 px-3 py-2">
+                  {user.picture ? (
+                    <img
+                      src={user.picture}
+                      alt={user.name}
+                      className="h-6 w-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-600/30 text-xs font-medium text-violet-300">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="hidden sm:block max-w-[120px] truncate text-sm text-slate-300">
+                    {user.name}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  title="Sign out"
+                  className="flex items-center justify-center rounded-lg border border-slate-700/80 bg-slate-900/80 p-2 text-slate-400 hover:text-white hover:border-slate-600 transition-all"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
             {/* Mobile hamburger */}
             <button
               className="md:hidden rounded-lg p-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
@@ -99,6 +135,13 @@ export function Navbar() {
             >
               <PlusCircle className="h-4 w-4" />
               New Auction
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
             </button>
           </div>
         )}

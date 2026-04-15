@@ -26,7 +26,7 @@ export class BidService {
    * on the auction row. This prevents race conditions where two concurrent bids
    * both read the same currentHighestBid and both pass the amount check.
    */
-  async placeBid(auctionId: string, dto: PlaceBidDto): Promise<Bid> {
+  async placeBid(auctionId: string, dto: PlaceBidDto, userId: string): Promise<Bid> {
     let savedBid: Bid;
     let user: User;
 
@@ -55,16 +55,16 @@ export class BidService {
       }
 
       const foundUser = await manager.findOne(User, {
-        where: { id: dto.userId },
+        where: { id: userId },
       });
       if (!foundUser) {
-        throw new NotFoundException(`User "${dto.userId}" not found`);
+        throw new NotFoundException(`User "${userId}" not found`);
       }
       user = foundUser;
 
       const bid = manager.create(Bid, {
         auctionId,
-        userId: dto.userId,
+        userId,
         amount: dto.amount,
       });
       savedBid = await manager.save(bid);

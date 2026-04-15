@@ -3,6 +3,8 @@ export type AuctionStatus = 'active' | 'ended'
 export interface User {
   id: string
   name: string
+  email: string
+  picture: string | null
   createdAt: string
 }
 
@@ -58,7 +60,6 @@ export interface CreateAuctionPayload {
 }
 
 export interface PlaceBidPayload {
-  userId: string
   amount: number
 }
 
