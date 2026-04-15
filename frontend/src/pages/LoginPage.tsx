@@ -25,7 +25,7 @@ export function LoginPage() {
               <Gavel className="h-5 w-5 text-white" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-white">
-              Bid<span className="text-gradient">Nest</span>
+              Bid<span className="text-gradient">Now</span>
             </span>
           </div>
 

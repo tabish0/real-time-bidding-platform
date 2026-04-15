@@ -31,7 +31,7 @@ export function Navbar() {
               <Gavel className="h-4 w-4" />
             </div>
             <span className="text-lg font-bold tracking-tight">
-              Bid<span className="text-gradient">Nest</span>
+              Bid<span className="text-gradient">Now</span>
             </span>
           </button>
 

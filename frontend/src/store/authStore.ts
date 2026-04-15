@@ -17,6 +17,6 @@ export const useAuthStore = create<AuthState>()(
       setAuth: (token, user) => set({ token, user }),
       clearAuth: () => set({ token: null, user: null }),
     }),
-    { name: 'bidnest-auth' },
+    { name: 'bidnow-auth' },
   ),
 )
