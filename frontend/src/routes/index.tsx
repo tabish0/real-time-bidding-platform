@@ -1,19 +1,12 @@
-import type { ReactNode } from 'react'
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
+import { RequireAuth } from '@/components/RequireAuth'
 import { Dashboard } from '@/pages/Dashboard'
 import { AuctionsPage } from '@/pages/AuctionsPage'
 import { AuctionDetailPage } from '@/pages/AuctionDetailPage'
 import { CreateAuctionPage } from '@/pages/CreateAuctionPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage'
-import { useAuthStore } from '@/store/authStore'
-
-function RequireAuth({ children }: { children: ReactNode }) {
-  const token = useAuthStore((s) => s.token)
-  if (!token) return <Navigate to="/login" replace />
-  return <>{children}</>
-}
 
 export const router = createBrowserRouter([
   {
