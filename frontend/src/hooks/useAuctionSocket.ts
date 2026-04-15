@@ -38,7 +38,7 @@ export function useAuctionSocket(auctionId: string) {
         id: event.id,
         auctionId,
         userId: event.userId,
-        user: { id: event.userId, name: event.userName, createdAt: event.createdAt },
+        user: { id: event.userId, name: event.userName, email: '', picture: null, createdAt: event.createdAt },
         amount: event.amount,
         createdAt: event.createdAt,
       }
