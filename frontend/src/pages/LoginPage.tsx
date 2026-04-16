@@ -29,7 +29,7 @@ export function LoginPage() {
             </span>
           </div>
 
-          <h1 className="text-xl font-semibold text-white mb-1">Welcome back</h1>
+          <h1 className="text-xl font-semibold text-white mb-1">Welcome to BidNow</h1>
           <p className="text-sm text-slate-400 mb-8">Sign in to start bidding on live auctions</p>
 
           {/* Google Sign-in button */}
